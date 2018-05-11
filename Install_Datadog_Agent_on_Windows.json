@@ -1,0 +1,21 @@
+{
+	"schemaVersion": "2.2",
+	"description": "Run DATADOG_INST_WIN document to install DATADOG in windows",
+	"parameters": {
+		"DatadogAPIKey": {
+			"description": "Specify Datadog Account API Key if doing a Fresh Install",
+			"type": "String"
+		}
+	},
+	"mainSteps": [{
+		"action": "aws:runPowerShellScript",
+		"name": "DATADOG_INST_WIN",
+		"inputs": {
+			"timeoutSeconds": 2400,
+			"runCommand": ["$url = 'https://s3.amazonaws.com/ddagent-windows-stable/datadog-agent-6-latest.amd64.msi'",
+			"$output = 'C:\\Windows\\Temp\\datadog-agent-6-latest.msi'",
+			"Invoke-WebRequest -Uri $url -OutFile $output",
+			"msiexec /qn /i C:\\Windows\\Temp\\datadog-agent-6-latest.msi APIKEY={{ DatadogAPIKey }}"]
+		}
+	}]
+}
