@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "2.2",
+  "description": "This  document to install DATADOG in windows",
+  "parameters": {
+    "DatadogAPIKey": {
+      "description": "Specify Datadog Account API Key if doing a Fresh Install",
+      "type": "String"
+    },
+    "PackageLink": {
+      "description": "Specify Datadog Agent source link to Install",
+      "type": "String",
+      "default": "https://s3.amazonaws.com/ddagent-windows-stable/datadog-agent-6-latest.amd64.msi"
+    },
+    "OutputPath": {
+      "description": "Specify the path where to download installation files",
+      "type": "String",
+      "default": "C:\\Windows\\Temp"
+    },
+    "FileName": {
+      "description": "Specify the file name for installtion file",
+      "type": "String",
+      "default": "dd-agent-6"
+    },
+    "configFileLinkForIIS": {
+      "description": "(Optional)Specify link download iis.yaml file",
+      "type": "String",
+      "default": ""
+    },
+    "ConfigPathForiis": {
+      "description": "Specify the path where to download iis config file",
+      "type": "String",
+      "default": "C:\\ProgramData\\Datadog\\conf.d\\iis.d"
+    },
+    "configFileLinkForWin32EventLog": {
+      "description": "(Optional)Specify the link to download win32eventlog.yaml file",
+      "type": "String",
+      "default": ""
+    },
+    "ConfigPathForWin32EventLog": {
+      "description": "Specify the path where to move Win32EventLog config file",
+      "type": "String",
+      "default": "C:\\ProgramData\\Datadog\\conf.d\\win32_event_log.d"
+    },
+    "configFileLinkWindowsService": {
+      "description": "(Optional)Specify WindowsService file link ",
+      "type": "String",
+      "default": ""
+    },
+    "ConfigPathForWindowsService": {
+      "description": "Specify the path where to move config file",
+      "type": "String",
+      "default": "C:\\ProgramData\\Datadog\\conf.d\\windows_service.d"
+    },
+    "configFileLinkProcess": {
+      "description": "(Optional)Specify Process file link ",
+      "type": "String",
+      "default": ""
+    },
+    "ConfigPathForProcess": {
+      "description": "Specify the path where to move config file",
+      "type": "String",
+      "default": "C:\\ProgramData\\Datadog\\conf.d\\process.d"
+    }
+  },
+  "mainSteps": [
+    {
+      "action": "aws:runPowerShellScript",
+      "precondition": {
+        "StringEquals": [
+          "platformType",
+          "Windows"
+        ]
+      },
+      "name": "DATADOG_INST_WIN",
+      "inputs": {
+        "timeoutSeconds": 2400,
+        "runCommand": [
+          "Invoke-WebRequest -Uri {{ PackageLink }} -OutFile {{ OutputPath }}\\{{ FileName }}.msi",
+          "msiexec /qn /i {{ OutputPath }}\\{{ FileName }}.msi APIKEY={{ DatadogAPIKey }}",
+          "Start-Sleep -s 240",
+          " If ('{{ configFileLinkForIIS }}') {",
+          "Invoke-WebRequest -Uri {{ configFileLinkForIIS }} -OutFile {{ OutputPath }}\\iis.yaml",
+          "Move-Item -Path {{ OutputPath }}\\iis.yaml -Destination {{ ConfigPathForiis }}\\conf.yaml",
+          "}",
+          " If ('{{ configFileLinkForWin32EventLog }}') {",
+          "Invoke-WebRequest -Uri {{ configFileLinkForWin32EventLog }} -OutFile {{ OutputPath }}\\win32_event_log.yaml",
+          "Move-Item -Path {{ OutputPath }}\\win32_event_log.yaml -Destination {{ ConfigPathForWin32EventLog }}\\conf.yaml",
+          "}",
+          " If ('{{ configFileLinkWindowsService }}') {",
+          "Invoke-WebRequest -Uri {{ configFileLinkWindowsService }} -OutFile {{ OutputPath }}\\windows_service.yaml",
+          "Move-Item -Path {{ OutputPath }}\\windows_service.yaml -Destination {{ ConfigPathForWindowsService }}\\conf.yaml",
+          "}",
+          " If ('{{ configFileLinkProcess }}') {",
+          "Invoke-WebRequest -Uri {{ configFileLinkProcess }} -OutFile {{ OutputPath }}\\process.yaml",
+          "Move-Item -Path {{ OutputPath }}\\process.yaml -Destination {{ ConfigPathForProcess }}\\conf.yaml",
+          "}",
+          "restart-Service -Name datadogagent -Force"
+        ]
+      }
+    }
+  ]
+}
