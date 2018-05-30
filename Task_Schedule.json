@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "2.2",
+  "description": "This  document to schedule a task to AD backup script in windows",
+  "parameters": {
+    "FilePath": {
+      "description": "Specify the path where the backup script located",
+      "type": "String",
+      "default": "C:\\Users\\Administrator\\groups.ps1"
+    },
+    "UserName": {
+      "description": "Specify the User Name",
+      "type": "String",
+      "default": "EXAMPLENIKHIL\\Administrator"
+    }
+  },
+  "mainSteps": [
+    {
+      "action": "aws:runPowerShellScript",
+      "precondition": {
+        "StringEquals": [
+          "platformType",
+          "Windows"
+        ]
+      },
+      "name": "TASK_SCHEDULER",
+      "inputs": {
+        "timeoutSeconds": 600,
+        "runCommand": [
+          "Import-Module ScheduledTasks",
+          "$action = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument '-NonInteractive -NoLogo -NoProfile -File {{ FilePath }}'",
+          "$trigger = New-ScheduledTaskTrigger -Weekly -At 12am -DaysOfWeek Sunday",
+          "Register-ScheduledTask -Action $action -Trigger $trigger -TaskName 'AD_BACKUP_WEEKLY' -Description 'RUN Weekly AD Backup Script' -User {{ UserName }} "
+        ]
+      }
+    }
+  ]
+}
