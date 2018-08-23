@@ -66,4 +66,14 @@ servicenow_endpoint| https://deloitteusadvisorydev.service-now.com/api/now/table
 black_listed_accounts"| ["XXXXXXXX","XXXXXXXX"]| Accounts to which no need to send emails
 
 **How to run serverless:**
-1. Clone the repo and navigate to [invoice-generation]  folder. 
+
+ 1. Clone the repo and navigate to [invoice-generation]  folder. 
+ 2. set AWS Credentials for the account which you use.
+        $ export AWS_PROFILE=*profilename*
+ 3. Create a S3 bucket or use existing one update the config.json with created invoice-bucket
+ 4. Update the VPC and Subnet details in which RDS is present in commonVaribales.yaml file.
+ 5. Update the commonVaribales file with location for config files (config.json and cost_config.json)[if needed]
+ 6. Run the following command  
+        $ *serverless deploy*
+
+
